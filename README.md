@@ -1,7 +1,7 @@
 # mini-rag-voice-assistant
 
 sudo apt install portaudio19-dev python3-pyaudio
-sudo apt install python3-pip libopenblas-dev
+sudo apt install python3-pip libopenblas-dev ffmpeg 
 sudo apt install -y cmake g++ libsndfile1
 sudo apt-get purge libespeak-ng*
 sudo apt-get install nvidia-jetpack

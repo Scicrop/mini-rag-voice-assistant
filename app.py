@@ -118,7 +118,7 @@ class VoiceAssistant:
             with wave.open(audio_file, "wb") as wav_file:
                 self.piper_voice.synthesize(text, wav_file)
             os.system(f"aplay {audio_file}")
-            os.remove(audio_file)  # Limpeza do arquivo temporário
+            #os.remove(audio_file)  # Limpeza do arquivo temporário
         except Exception as e:
             print(f"Erro na síntese de voz: {e}")
 
