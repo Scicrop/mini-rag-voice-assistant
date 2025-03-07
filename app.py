@@ -94,7 +94,7 @@ class VoiceAssistant:
     def speech_to_text(self):
         """Converte áudio em texto usando Whisper com GPU, se disponível."""
         try:
-            result = self.whisper_model.transcribe(WAVE_OUTPUT_FILENAME)
+            result = self.whisper_model.transcribe(WAVE_OUTPUT_FILENAME, language="pt")
             return result["text"]
         except Exception as e:
             print(f"Erro na transcrição: {e}")
