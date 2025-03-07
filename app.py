@@ -95,7 +95,11 @@ class VoiceAssistant:
         """Converte áudio em texto usando Whisper com GPU, se disponível."""
         try:
             print(f"Dispositivo do modelo Whisper: {self.whisper_model.device}")
-            result = self.whisper_model.transcribe(WAVE_OUTPUT_FILENAME, language="pt")
+            result = self.whisper_model.transcribe(
+                WAVE_OUTPUT_FILENAME,
+                language="pt",
+                initial_prompt="Este é um áudio em português brasileiro."
+            )
             return result["text"]
         except Exception as e:
             print(f"Erro na transcrição: {e}")
