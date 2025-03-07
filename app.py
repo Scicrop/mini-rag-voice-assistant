@@ -10,12 +10,12 @@ from piper import PiperVoice
 import torch
 
 # Configurações de áudio otimizadas
-CHUNK = 512
+CHUNK = 512  # Menor tamanho de buffer para reduzir latência
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 8000
+RATE = 8000  # Taxa de amostragem reduzida para menor carga
 WAVE_OUTPUT_FILENAME = "input.wav"
-SILENCE_THRESHOLD = 400
+SILENCE_THRESHOLD = 400  # Ajustado para sensibilidade em taxa menor
 SILENCE_DURATION = 1.5
 MAX_DURATION = 20
 
@@ -26,6 +26,7 @@ class VoiceAssistant:
     def __init__(self, device_index, model_name):
         self.device_index = device_index
         self.model_name = model_name
+
         # Inicialização única de recursos
         self.audio = pyaudio.PyAudio()
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -63,7 +64,7 @@ class VoiceAssistant:
                 silence_start = None
             elif recording:
                 frames.append(data)
-                if not is_speech(data):
+                if not self.is_speech(data):  # Corrigido: self.is_speech
                     if silence_start is None:
                         silence_start = time.time()
                     elif time.time() - silence_start > SILENCE_DURATION:
