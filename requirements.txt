@@ -1,0 +1,6 @@
+pyaudio==0.2.14
+git+https://github.com/openai/whisper.git
+ollama==0.3.3
+numpy==1.24.4
+piper-phonemize==1.2.0
+onnxruntime==1.16.3
