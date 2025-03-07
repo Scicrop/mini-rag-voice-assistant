@@ -145,4 +145,17 @@ class VoiceAssistant:
 
 def parse_arguments():
     """Parseia os argumentos da linha de comando."""
-    parser = argparse.ArgumentParser(description="Assistente de voz otimizado para Jet
+    parser = argparse.ArgumentParser(description="Assistente de voz otimizado para Jetson Orin Nano.")
+    parser.add_argument("--device-index", type=int, default=5, help="Índice do dispositivo de áudio (padrão: 5)")
+    parser.add_argument("--model", type=str, default="tinyllama", help="Nome do modelo Ollama (padrão: tinyllama)")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_arguments()
+    assistant = VoiceAssistant(args.device_index, args.model)
+    try:
+        assistant.run()
+    except KeyboardInterrupt:
+        print("Programa encerrado pelo usuário.")
+        assistant.cleanup()
