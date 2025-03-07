@@ -7,7 +7,7 @@ import time
 import os
 import argparse
 from piper import PiperVoice
-import onnxruntime as ort
+import torch
 
 # Configurações de áudio otimizadas
 CHUNK = 512  # Menor tamanho de buffer para reduzir latência
@@ -29,18 +29,10 @@ class VoiceAssistant:
 
         # Inicialização única de recursos
         self.audio = pyaudio.PyAudio()
-        self.whisper_model = whisper.load_model("tiny", device="cuda" if self.is_cuda_available() else "cpu")
-        self.piper_session = ort.InferenceSession("voice.onnx",
-                                                  providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
-        self.piper_voice = PiperVoice.load("voice.onnx", config_path="voice.onnx.json", session=self.piper_session)
-
-    def is_cuda_available(self):
-        """Verifica se CUDA está disponível para aceleração."""
-        try:
-            import torch
-            return torch.cuda.is_available()
-        except ImportError:
-            return False
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Usando dispositivo: {self.device}")
+        self.whisper_model = whisper.load_model("tiny", device=self.device)
+        self.piper_voice = PiperVoice.load("voice.onnx", config_path="voice.onnx.json")
 
     def is_speech(self, data, threshold=SILENCE_THRESHOLD):
         """Verifica se os dados de áudio contêm fala."""
@@ -120,7 +112,7 @@ class VoiceAssistant:
             return None
 
     def text_to_speech(self, text):
-        """Converte texto em fala usando Piper com GPU, se disponível."""
+        """Converte texto em fala usando Piper."""
         audio_file = "response.wav"
         try:
             with wave.open(audio_file, "wb") as wav_file:
@@ -153,17 +145,4 @@ class VoiceAssistant:
 
 def parse_arguments():
     """Parseia os argumentos da linha de comando."""
-    parser = argparse.ArgumentParser(description="Assistente de voz otimizado para Jetson Orin Nano.")
-    parser.add_argument("--device-index", type=int, default=5, help="Índice do dispositivo de áudio (padrão: 5)")
-    parser.add_argument("--model", type=str, default="tinyllama", help="Nome do modelo Ollama (padrão: tinyllama)")
-    return parser.parse_args()
-
-
-if __name__ == "__main__":
-    args = parse_arguments()
-    assistant = VoiceAssistant(args.device_index, args.model)
-    try:
-        assistant.run()
-    except KeyboardInterrupt:
-        print("Programa encerrado pelo usuário.")
-        assistant.cleanup()
+    parser = argparse.ArgumentParser(description="Assistente de voz otimizado para Jet
