@@ -10,12 +10,12 @@ from piper import PiperVoice
 import torch
 
 # Configurações de áudio otimizadas
-CHUNK = 512  # Menor tamanho de buffer para reduzir latência
+CHUNK = 512
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 8000  # Taxa de amostragem reduzida para menor carga
+RATE = 8000
 WAVE_OUTPUT_FILENAME = "input.wav"
-SILENCE_THRESHOLD = 400  # Ajustado para sensibilidade em taxa menor
+SILENCE_THRESHOLD = 400
 SILENCE_DURATION = 1.5
 MAX_DURATION = 20
 
@@ -26,7 +26,6 @@ class VoiceAssistant:
     def __init__(self, device_index, model_name):
         self.device_index = device_index
         self.model_name = model_name
-
         # Inicialização única de recursos
         self.audio = pyaudio.PyAudio()
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -64,7 +63,7 @@ class VoiceAssistant:
                 silence_start = None
             elif recording:
                 frames.append(data)
-                if not self.is_speech(data):
+                if not is_speech(data):
                     if silence_start is None:
                         silence_start = time.time()
                     elif time.time() - silence_start > SILENCE_DURATION:
@@ -112,15 +111,28 @@ class VoiceAssistant:
             return None
 
     def text_to_speech(self, text):
-        """Converte texto em fala usando Piper."""
+        """Converte texto em fala usando Piper e reproduz diretamente com pyaudio."""
         audio_file = "response.wav"
         try:
+            # Gera o arquivo WAV com Piper
             with wave.open(audio_file, "wb") as wav_file:
                 self.piper_voice.synthesize(text, wav_file)
-            os.system(f"aplay {audio_file}")
-            #os.remove(audio_file)  # Limpeza do arquivo temporário
+
+            # Reproduz o áudio diretamente com pyaudio
+            with wave.open(audio_file, 'rb') as wf:
+                stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
+                                         channels=wf.getnchannels(),
+                                         rate=wf.getframerate(),
+                                         output=True)
+                data = wf.readframes(CHUNK)
+                while data:
+                    stream.write(data)
+                    data = wf.readframes(CHUNK)
+                stream.stop_stream()
+                stream.close()
+            # os.remove(audio_file)  # Limpeza opcional
         except Exception as e:
-            print(f"Erro na síntese de voz: {e}")
+            print(f"Erro na síntese ou reprodução de voz: {e}")
 
     def run(self):
         """Executa o loop principal do assistente."""
@@ -135,7 +147,7 @@ class VoiceAssistant:
                     print(f"Resposta do {self.model_name}: {answer}")
                     self.text_to_speech(answer)
             if os.path.exists(WAVE_OUTPUT_FILENAME):
-                os.remove(WAVE_OUTPUT_FILENAME)  # Limpeza do arquivo de entrada
+                os.remove(WAVE_OUTPUT_FILENAME)
             print("Pronto para a próxima pergunta! (Ctrl+C para sair)")
 
     def cleanup(self):
