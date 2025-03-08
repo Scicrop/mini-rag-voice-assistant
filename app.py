@@ -1,6 +1,6 @@
 import pyaudio
 import wave
-import whisper
+from faster_whisper import WhisperModel
 import ollama
 import numpy as np
 import time
@@ -8,39 +8,47 @@ import os
 import argparse
 from piper import PiperVoice
 import torch
+import onnxruntime as ort
 
 # Configurações de áudio otimizadas
-CHUNK = 512  # Menor tamanho de buffer para reduzir latência
+CHUNK = 512
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 8000  # Taxa de amostragem reduzida para menor carga
+RATE = 8000
 WAVE_OUTPUT_FILENAME = "input.wav"
-SILENCE_THRESHOLD = 400  # Ajustado para sensibilidade em taxa menor
+SILENCE_THRESHOLD = 400
 SILENCE_DURATION = 1.5
-MAX_DURATION = 20
-
+MAX_DURATION = 10
 
 class VoiceAssistant:
-    """Classe para gerenciar o assistente de voz no Jetson Orin Nano."""
-
     def __init__(self, device_index, model_name):
         self.device_index = device_index
         self.model_name = model_name
-
-        # Inicialização única de recursos
         self.audio = pyaudio.PyAudio()
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Usando dispositivo: {self.device}")
-        self.whisper_model = whisper.load_model("tiny", device=self.device)
+        
+        # Faster-Whisper na CPU
+        self.whisper_device = "cpu"
+        print(f"Dispositivo do Faster-Whisper: {self.whisper_device}")
+        
+        # Piper tenta GPU via onnxruntime
+        self.piper_device = "cuda" if "CUDAExecutionProvider" in ort.get_available_providers() else "cpu"
+        print(f"Dispositivo esperado do Piper: {self.piper_device}")
+        
+        # Ollama (assume GPU se compilado com CUDA)
+        self.ollama_device = "cuda" if torch.cuda.is_available() else "cpu"  # Apenas indicativo
+        print(f"Dispositivo esperado do Ollama: {self.ollama_device}")
+        
+        # Carrega o Faster-Whisper na CPU
+        self.whisper_model = WhisperModel("tiny", device=self.whisper_device, compute_type="int8")
+        
+        # Carrega o Piper (GPU se disponível)
         self.piper_voice = PiperVoice.load("voice.onnx", config_path="voice.onnx.json")
 
     def is_speech(self, data, threshold=SILENCE_THRESHOLD):
-        """Verifica se os dados de áudio contêm fala."""
         audio_data = np.frombuffer(data, dtype=np.int16)
         return np.abs(audio_data).mean() > threshold
 
     def record_audio(self):
-        """Grava áudio do microfone com detecção de silêncio."""
         print("Aguardando você falar...")
         try:
             stream = self.audio.open(format=FORMAT, channels=CHANNELS,
@@ -64,7 +72,7 @@ class VoiceAssistant:
                 silence_start = None
             elif recording:
                 frames.append(data)
-                if not self.is_speech(data):  # Corrigido: self.is_speech
+                if not self.is_speech(data):
                     if silence_start is None:
                         silence_start = time.time()
                     elif time.time() - silence_start > SILENCE_DURATION:
@@ -92,39 +100,48 @@ class VoiceAssistant:
             return False
 
     def speech_to_text(self):
-        """Converte áudio em texto usando Whisper com GPU, se disponível."""
+        print(f"Dispositivo do Faster-Whisper: {self.whisper_device}")
+        if not os.path.exists(WAVE_OUTPUT_FILENAME):
+            print(f"Arquivo de áudio {WAVE_OUTPUT_FILENAME} não encontrado.")
+            return None
         try:
-            print(f"Dispositivo do modelo Whisper: {self.whisper_model.device}")
-            result = self.whisper_model.transcribe(
+            start_time = time.time()
+            segments, info = self.whisper_model.transcribe(
                 WAVE_OUTPUT_FILENAME,
                 language="pt",
                 initial_prompt="Este é um áudio em português brasileiro."
             )
-            return result["text"]
+            text = " ".join(segment.text for segment in segments)
+            end_time = time.time()
+            print(f"Tempo de transcrição: {end_time - start_time:.2f} segundos")
+            return text
         except Exception as e:
             print(f"Erro na transcrição: {e}")
             return None
 
     def ask_ollama(self, question):
-        """Consulta o modelo Ollama especificado."""
+        print("Consultando Ollama (espera-se GPU)...")
+        start_time = time.time()
         try:
             response = ollama.chat(model=self.model_name, messages=[
                 {"role": "user", "content": question}
             ])
+            end_time = time.time()
+            print(f"Tempo de resposta do Ollama: {end_time - start_time:.2f} segundos")
             return response["message"]["content"]
         except Exception as e:
             print(f"Erro ao consultar o modelo {self.model_name}: {e}")
             return None
 
     def text_to_speech(self, text):
-        """Converte texto em fala usando Piper e reproduz diretamente com pyaudio."""
+        print(f"Dispositivo do Piper: {self.piper_device}")
         audio_file = "response.wav"
         try:
-            # Gera o arquivo WAV com Piper
+            start_time = time.time()
             with wave.open(audio_file, "wb") as wav_file:
                 self.piper_voice.synthesize(text, wav_file)
-
-            # Reproduz o áudio diretamente com pyaudio
+            end_time = time.time()
+            print(f"Tempo de síntese Piper: {end_time - start_time:.2f} segundos")
             with wave.open(audio_file, 'rb') as wf:
                 stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
                                          channels=wf.getnchannels(),
@@ -136,12 +153,10 @@ class VoiceAssistant:
                     data = wf.readframes(CHUNK)
                 stream.stop_stream()
                 stream.close()
-            # os.remove(audio_file)  # Limpeza opcional
         except Exception as e:
             print(f"Erro na síntese ou reprodução de voz: {e}")
 
     def run(self):
-        """Executa o loop principal do assistente."""
         while True:
             if not self.record_audio():
                 continue
@@ -157,17 +172,13 @@ class VoiceAssistant:
             print("Pronto para a próxima pergunta! (Ctrl+C para sair)")
 
     def cleanup(self):
-        """Libera recursos ao encerrar."""
         self.audio.terminate()
 
-
 def parse_arguments():
-    """Parseia os argumentos da linha de comando."""
     parser = argparse.ArgumentParser(description="Assistente de voz otimizado para Jetson Orin Nano.")
     parser.add_argument("--device-index", type=int, default=5, help="Índice do dispositivo de áudio (padrão: 5)")
     parser.add_argument("--model", type=str, default="tinyllama", help="Nome do modelo Ollama (padrão: tinyllama)")
     return parser.parse_args()
-
 
 if __name__ == "__main__":
     args = parse_arguments()
