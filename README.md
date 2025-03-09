@@ -17,10 +17,10 @@ wget raw.githubusercontent.com/pytorch/pytorch/5c6af2b583709f6176898c017424dc998
 export CUDA_VERSION=12.1
 bash ./install_cusparselt.sh
 exit
-export TORCH_INSTALL=https://developer.download.nvidia.cn/compute/redist/jp/v511/pytorch/torch-2.0.0+nv23.05-cp38-cp38-linux_aarch64.whl
-python3 -m pip install --upgrade pip; python3 -m pip install numpy==’1.26.1’; python3 -m pip install --no-cache $TORCH_INSTALL
-
-
+python3 -m pip install --upgrade pip; python3 -m pip install numpy=='1.26.1';
+python3 -m pip install --no-cache https://developer.download.nvidia.com/compute/redist/jp/v60dp/pytorch/torch-2.3.0a0+40ec155e58.nv24.03.13384722-cp310-cp310-linux_aarch64.whl
+mkdir git
+cd git
 git clone https://github.com/rhasspy/espeak-ng
 ./autogen.sh
 ./configure
