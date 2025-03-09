@@ -22,11 +22,19 @@ python3 -m pip install --no-cache https://developer.download.nvidia.com/compute/
 mkdir git
 cd git
 git clone https://github.com/rhasspy/espeak-ng
+cd espeak-ng
 ./autogen.sh
 ./configure
 make
 sudo make install
 cd ..
+git clone --recursive -b v1.16.3 https://github.com/microsoft/onnxruntime.git
+cd onnxruntime
+git checkout v1.16.3
+git submodule update --init --recursive
+
+
+
 git clone https://github.com/rhasspy/piper-phonemize
 cd piper-phonemize/
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.16.3/onnxruntime-linux-aarch64-1.16.3.tgz
