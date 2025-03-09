@@ -1,5 +1,9 @@
 # mini-rag-voice-assistant
 
+## Important
+Make sure that your NVIDIA Jetson Orin Nano firmware is at version >= 36.4.2, and you are running JetPack version 6.2 and your board is working with MAXN SUPER  unregulated performance.
+
+
 ## Dependencies
 ```
 sudo apt install portaudio19-dev python3-pyaudio
