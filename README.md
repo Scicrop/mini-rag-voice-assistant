@@ -1,5 +1,7 @@
 # mini-rag-voice-assistant
 
+## Dependencies
+```
 sudo apt install portaudio19-dev python3-pyaudio
 sudo apt install python3-pip libopenblas-dev ffmpeg 
 sudo apt install -y cmake g++ libsndfile1
@@ -38,3 +40,5 @@ sudo ldconfig
 cd mini-rag-voice-assistant
 wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx -O voice.onnx
 wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json -O voice.onnx.json
+
+```

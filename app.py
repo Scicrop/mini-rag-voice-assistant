@@ -20,27 +20,28 @@ SILENCE_THRESHOLD = 400
 SILENCE_DURATION = 1.5
 MAX_DURATION = 10
 
+
 class VoiceAssistant:
     def __init__(self, device_index, model_name):
         self.device_index = device_index
         self.model_name = model_name
         self.audio = pyaudio.PyAudio()
-        
+
         # Faster-Whisper na CPU
         self.whisper_device = "cpu"
         print(f"Dispositivo do Faster-Whisper: {self.whisper_device}")
-        
+
         # Piper tenta GPU via onnxruntime
         self.piper_device = "cuda" if "CUDAExecutionProvider" in ort.get_available_providers() else "cpu"
         print(f"Dispositivo esperado do Piper: {self.piper_device}")
-        
+
         # Ollama (assume GPU se compilado com CUDA)
         self.ollama_device = "cuda" if torch.cuda.is_available() else "cpu"  # Apenas indicativo
         print(f"Dispositivo esperado do Ollama: {self.ollama_device}")
-        
+
         # Carrega o Faster-Whisper na CPU
         self.whisper_model = WhisperModel("tiny", device=self.whisper_device, compute_type="int8")
-        
+
         # Carrega o Piper (GPU se disponível)
         self.piper_voice = PiperVoice.load("voice.onnx", config_path="voice.onnx.json")
 
@@ -174,11 +175,13 @@ class VoiceAssistant:
     def cleanup(self):
         self.audio.terminate()
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Assistente de voz otimizado para Jetson Orin Nano.")
     parser.add_argument("--device-index", type=int, default=5, help="Índice do dispositivo de áudio (padrão: 5)")
     parser.add_argument("--model", type=str, default="tinyllama", help="Nome do modelo Ollama (padrão: tinyllama)")
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     args = parse_arguments()
