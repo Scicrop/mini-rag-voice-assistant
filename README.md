@@ -12,7 +12,7 @@ sudo apt install python3-pip libopenblas-dev ffmpeg
 sudo apt install -y cmake g++ libsndfile1
 sudo apt-get purge libespeak-ng*
 sudo apt-get install nvidia-jetpack
-sudo apt install git cmake build-essential python3-dev python3-pip libcudnn8 libcudnn8-dev tensorrt-dev
+sudo apt install git cmake build-essential python3-dev libcudnn9 libcudnn9-dev tensorrt-dev
 ```
 ### Cuda and PyTorch
 ```
@@ -51,7 +51,9 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/aarch64-linux-gnu/tegra:$L
   --use_cuda \
   --cuda_home /usr/local/cuda \
   --cudnn_home /usr/lib/aarch64-linux-gnu \
-  --parallel 4
+  --parallel \
+  --skip_tests \
+  --build_shared_lib
 
 git clone https://github.com/rhasspy/piper-phonemize
 cd piper-phonemize/
