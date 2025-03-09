@@ -32,8 +32,17 @@ git clone --recursive -b v1.16.3 https://github.com/microsoft/onnxruntime.git
 cd onnxruntime
 git checkout v1.16.3
 git submodule update --init --recursive
-
-
+export PATH=/usr/local/cuda/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/aarch64-linux-gnu/tegra:$LD_LIBRARY_PATH
+./build.sh \
+  --config Release \
+  --update \
+  --build \
+  --build_wheel \
+  --use_cuda \
+  --cuda_home /usr/local/cuda \
+  --cudnn_home /usr/lib/aarch64-linux-gnu \
+  --parallel 4
 
 git clone https://github.com/rhasspy/piper-phonemize
 cd piper-phonemize/
