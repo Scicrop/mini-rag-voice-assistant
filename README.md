@@ -5,12 +5,17 @@ Make sure that your NVIDIA Jetson Orin Nano firmware is at version >= 36.4.2, an
 
 
 ## Dependencies
+### Generic Package Dependencies
 ```
 sudo apt install portaudio19-dev python3-pyaudio
 sudo apt install python3-pip libopenblas-dev ffmpeg 
 sudo apt install -y cmake g++ libsndfile1
 sudo apt-get purge libespeak-ng*
 sudo apt-get install nvidia-jetpack
+sudo apt install git cmake build-essential python3-dev python3-pip libcudnn8 libcudnn8-dev tensorrt-dev
+```
+### Cuda and PyTorch
+```
 sudo -i
 cd /opt
 wget raw.githubusercontent.com/pytorch/pytorch/5c6af2b583709f6176898c017424dc9981023c28/.ci/docker/common/install_cusparselt.sh
@@ -19,6 +24,10 @@ bash ./install_cusparselt.sh
 exit
 python3 -m pip install --upgrade pip; python3 -m pip install numpy=='1.26.1';
 python3 -m pip install --no-cache https://developer.download.nvidia.com/compute/redist/jp/v60dp/pytorch/torch-2.3.0a0+40ec155e58.nv24.03.13384722-cp310-cp310-linux_aarch64.whl
+pip3 install numpy wheel setuptools packaging
+```
+### STT and TTS Dependencies (ESPEAK-NG fork)
+```
 mkdir git
 cd git
 git clone https://github.com/rhasspy/espeak-ng
