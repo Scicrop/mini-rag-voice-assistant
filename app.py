@@ -9,6 +9,7 @@ import argparse
 from piper import PiperVoice
 import torch
 import onnxruntime as ort
+import led_matrix as mb
 
 # Configurações de áudio otimizadas
 CHUNK = 512
@@ -50,6 +51,7 @@ class VoiceAssistant:
         return np.abs(audio_data).mean() > threshold
 
     def record_audio(self):
+        mb.set_behavior("pulse_green")
         print("Aguardando você falar...")
         try:
             stream = self.audio.open(format=FORMAT, channels=CHANNELS,
@@ -121,6 +123,7 @@ class VoiceAssistant:
             return None
 
     def ask_ollama(self, question):
+        mb.set_behavior("thinking")
         print("Consultando Ollama (espera-se GPU)...")
         start_time = time.time()
         try:
@@ -135,6 +138,7 @@ class VoiceAssistant:
             return None
 
     def text_to_speech(self, text):
+        mb.set_behavior("pulse_blue")
         print(f"Dispositivo do Piper: {self.piper_device}")
         audio_file = "response.wav"
         try:
@@ -184,6 +188,7 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
+    mb.start_animation()
     args = parse_arguments()
     assistant = VoiceAssistant(args.device_index, args.model)
     try:
