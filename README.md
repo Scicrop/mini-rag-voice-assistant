@@ -33,6 +33,12 @@ python3 -m pip install --upgrade pip; python3 -m pip install numpy=='1.26.1';
 python3 -m pip install --no-cache https://developer.download.nvidia.com/compute/redist/jp/v61/pytorch/torch-2.5.0a0+872d972e41.nv24.08.17622132-cp310-cp310-linux_aarch64.whl
 pip3 install numpy wheel setuptools packaging
 ```
+### Ollama 
+```
+curl -fsSL https://ollama.ai/install.sh | sh
+ollama pull tinyllama
+```
+```
 ### STT and TTS Dependencies (ESPEAK-NG fork)
 ```
 mkdir git
@@ -44,9 +50,12 @@ cd espeak-ng
 make
 sudo make install
 cd ..
-git clone --recursive -b v1.16.3 https://github.com/microsoft/onnxruntime.git
+```
+### STT and TTS Dependencies (Onnxruntime for piper-tts)
+```
+git clone --recursive -b v1.20.0 https://github.com/microsoft/onnxruntime.git
 cd onnxruntime
-git checkout v1.16.3
+git checkout v1.20.0
 git submodule update --init --recursive
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/aarch64-linux-gnu/tegra:$LD_LIBRARY_PATH
@@ -58,7 +67,6 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/aarch64-linux-gnu/tegra:$L
   --use_cuda \
   --cuda_home /usr/local/cuda \
   --cudnn_home /usr/lib/aarch64-linux-gnu \
-  --parallel \
   --skip_tests \
   --build_shared_lib
 cd build/Linux/Release
@@ -68,11 +76,17 @@ pip3 install dist/onnxruntime_gpu*.whl
 sudo cp libonnxruntime.so /usr/lib
 sudo ldconfig
 cd ../../../../
+```
+### STT and TTS Dependencies (piper-phonemize)
+```
 git clone https://github.com/rhasspy/piper-phonemize
 cd piper-phonemize/
 export CPLUS_INCLUDE_PATH=/usr/local/include/onnxruntime:$CPLUS_INCLUDE_PATH
 pip install -e .
 cd ..
+```
+### STT and TTS Dependencies (piper-tts)
+```
 git clone https://github.com/Scicrop/mini-rag-voice-assistant
 git clone https://github.com/rhasspy/piper
 cp mini-rag-voice-assistant/piper-requirements.txt piper/src/python_run/requirements.txt
