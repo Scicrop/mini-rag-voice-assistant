@@ -38,7 +38,6 @@ pip3 install numpy wheel setuptools packaging
 curl -fsSL https://ollama.ai/install.sh | sh
 ollama pull tinyllama
 ```
-```
 ### STT and TTS Dependencies (ESPEAK-NG fork)
 ```
 mkdir git
