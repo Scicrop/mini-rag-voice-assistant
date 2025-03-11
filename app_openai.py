@@ -168,7 +168,7 @@ class VoiceAssistant:
                 print(f"Pergunta reconhecida: {question}")
                 answer = self.ask_ollama(question)
                 if answer:
-                    print(f"Resposta do {self.model_name}: {answer}")
+                    print(f"Resposta do: {answer}")
                     self.text_to_speech(answer)
             if os.path.exists(WAVE_OUTPUT_FILENAME):
                 os.remove(WAVE_OUTPUT_FILENAME)
