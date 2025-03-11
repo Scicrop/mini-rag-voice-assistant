@@ -16,7 +16,7 @@ from rag_openai import get_response
 CHUNK = 512
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 8000
+RATE = 16000
 WAVE_OUTPUT_FILENAME = "input.wav"
 SILENCE_THRESHOLD = 400
 SILENCE_DURATION = 1.5
@@ -132,7 +132,7 @@ class VoiceAssistant:
             print(f"Tempo de resposta do Ollama: {end_time - start_time:.2f} segundos")
             return response["message"]["content"]
         except Exception as e:
-            print(f"Erro ao consultar o modelo {self.model_name}: {e}")
+            print(f"Erro ao consultar o modelo: {e}")
             return None
 
     def text_to_speech(self, text):
