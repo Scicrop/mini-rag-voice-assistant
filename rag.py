@@ -51,7 +51,7 @@ def main():
         query_engine = setup_rag()
 
         # Exemplo de pergunta
-        pergunta = "O que é RAG em português?"
+        pergunta = "Meu trator não liga, o que pode ser?"
         resposta = query_engine.query(pergunta)
 
         # Imprimindo a resposta
