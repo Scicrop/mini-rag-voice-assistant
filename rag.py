@@ -4,8 +4,7 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.llms.ollama import Ollama
 import chromadb
-import os
-
+import argparse
 
 # Função para configurar o RAG
 def setup_rag():
@@ -43,24 +42,33 @@ def setup_rag():
 
     return query_engine
 
-
-# Função principal para testar o RAG
-def main():
+# Função para processar a pergunta
+def process_query(pergunta):
     try:
         # Configurando o RAG
         query_engine = setup_rag()
 
-        # Exemplo de pergunta
-        pergunta = "Meu trator não liga, o que pode ser?"
+        # Fazendo a pergunta ao query engine
         resposta = query_engine.query(pergunta)
 
-        # Imprimindo a resposta
+        # Imprimindo a pergunta e a resposta
         print(f"Pergunta: {pergunta}")
         print(f"Resposta: {resposta.response}")
 
     except Exception as e:
         print(f"Erro: {str(e)}")
 
+# Função principal para lidar com argumentos da linha de comando
+def main():
+    # Configurando o parser de argumentos
+    parser = argparse.ArgumentParser(description="Faça uma pergunta ao RAG via linha de comando.")
+    parser.add_argument("pergunta", type=str, help="A pergunta que você deseja fazer ao RAG")
+
+    # Parseando os argumentos
+    args = parser.parse_args()
+
+    # Processando a pergunta fornecida
+    process_query(args.pergunta)
 
 if __name__ == "__main__":
     main()
