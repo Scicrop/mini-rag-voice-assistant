@@ -7,16 +7,16 @@ import chromadb
 import argparse
 
 # Função para configurar o RAG
-def setup_rag():
+def setup_rag(model_name):
     # 1. Configurando o modelo de embedding do Ollama
     embedding_model = OllamaEmbedding(
-        model_name="cnmoro/Qwen2.5-0.5B-Portuguese-v2:fp16",
+        model_name=model_name,
         base_url="http://localhost:11434"  # URL padrão do Ollama local
     )
 
     # 2. Configurando o LLM do Ollama
     llm = Ollama(
-        model="cnmoro/Qwen2.5-0.5B-Portuguese-v2:fp16",
+        model=model_name,
         base_url="http://localhost:11434",
         temperature=0.7
     )
@@ -43,15 +43,16 @@ def setup_rag():
     return query_engine
 
 # Função para processar a pergunta
-def process_query(pergunta):
+def process_query(pergunta, model_name):
     try:
-        # Configurando o RAG
-        query_engine = setup_rag()
+        # Configurando o RAG com o modelo especificado
+        query_engine = setup_rag(model_name)
 
         # Fazendo a pergunta ao query engine
         resposta = query_engine.query(pergunta)
 
-        # Imprimindo a pergunta e a resposta
+        # Imprimindo a pergunta, modelo e resposta
+        print(f"Modelo usado: {model_name}")
         print(f"Pergunta: {pergunta}")
         print(f"Resposta: {resposta.response}")
 
@@ -63,12 +64,18 @@ def main():
     # Configurando o parser de argumentos
     parser = argparse.ArgumentParser(description="Faça uma pergunta ao RAG via linha de comando.")
     parser.add_argument("pergunta", type=str, help="A pergunta que você deseja fazer ao RAG")
+    parser.add_argument(
+        "--modelo",
+        type=str,
+        default="cnmoro/Qwen2.5-0.5B-Portuguese-v2:fp16",
+        help="Nome do modelo Ollama a ser usado (padrão: cnmoro/Qwen2.5-0.5B-Portuguese-v2:fp16)"
+    )
 
     # Parseando os argumentos
     args = parser.parse_args()
 
-    # Processando a pergunta fornecida
-    process_query(args.pergunta)
+    # Processando a pergunta com o modelo fornecido
+    process_query(args.pergunta, args.modelo)
 
 if __name__ == "__main__":
     main()
