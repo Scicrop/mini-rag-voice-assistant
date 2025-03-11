@@ -130,7 +130,7 @@ class VoiceAssistant:
             response = get_response(question)
             end_time = time.time()
             print(f"Tempo de resposta do Ollama: {end_time - start_time:.2f} segundos")
-            return response["message"]["content"]
+            return response
         except Exception as e:
             print(f"Erro ao consultar o modelo: {e}")
             return None
